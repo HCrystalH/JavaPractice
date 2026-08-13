@@ -1,17 +1,23 @@
-package org.example.services;
+package org.example.service;
 
 import org.example.dto.request.EmployeeRequest;
 import org.example.dto.response.EmployeeResponse;
-import org.example.entities.Employee;
+import org.example.entity.Employee;
+import org.example.exception.ResourceNotFound;
 import org.example.repository.EmployeeRepository;
 
 import java.util.List;
 
+/**
+ * ID must not be duplicated
+ * update, delete must handle NOT FOUND employee
+ * findById NOT EXIST must return suitable response
+ */
 public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
 
     // Constructor injection
-    EmployeeServiceImpl(EmployeeRepository employeeRepository) {
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository) {
         this.employeeRepository = employeeRepository;
     }
 
@@ -28,7 +34,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeResponse findById(int id) {
-         return convertToDto(employeeRepository.findById(id).orElse(null));
+        Employee employee = employeeRepository.findById(id).orElse(null);
+        if(employee == null){
+            throw new ResourceNotFound("Employee not found");
+        }
+        return convertToDto(employee);
     }
 
     @Override
@@ -40,18 +50,21 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public void update(EmployeeRequest employee) {
+    public void update(int id, EmployeeRequest employee) {
+        if(findById(id) == null){
+            throw new ResourceNotFound("Employee not found");
+        }
         employeeRepository.update(convertToEntity(employee));
     }
 
     @Override
-    public void delete(EmployeeRequest employee) {
-        if(findById(employee.id()) == null){
-            System.out.println("Employee not found");
-            return;
+    public void delete(int id) {
+        Employee employee = employeeRepository.findById(id).orElse(null);
+        if(employee == null){
+            throw new ResourceNotFound("Employee not found");
         }
 
-        employeeRepository.delete(convertToEntity(employee));
+        employeeRepository.delete(employee);
     }
 
     // Helper method
@@ -59,7 +72,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     private Employee convertToEntity(EmployeeRequest employeeRequest){
         Employee employee = new Employee();
 
-        employee.setId(employeeRequest.id());   // id for delete, update request
         employee.setName(employeeRequest.name());
         employee.setSalary(employeeRequest.salary());
         employee.setDepartment(employeeRequest.department());
