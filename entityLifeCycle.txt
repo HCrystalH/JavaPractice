@@ -1,0 +1,78 @@
+             persist()
+   Transient ──────────────► Persistent
+      ▲                          │
+      │                          │ commit / flush
+      │                          ▼
+      │                       Database
+      │
+      │
+      └─────── new object
+
+             persist
+Transient ─────────────► Persistent
+                            │
+                   session.close()
+                            │
+                            ▼
+                         Detached
+                            │
+                          merge
+                            │
+                            ▼
+                        Persistent
+
+Persistent ──remove()──► Removed
+
+Persistent ───────► Detached
+                    (session closed)
+
+Detached ── merge() ──► Persistent
+
+
+Transient	New Java object, Hibernate doesn't know about it
+Persistent	Associated with an active Hibernate Session
+Detached	Was persistent, but no longer associated with a Session
+Removed	    Scheduled for deletion
+
+persist()
+   ↓
+managed entity
+   ↓
+flush
+   ↓
+SQL INSERT
+   ↓
+commit
+   ↓
+transaction committed
+
+persist(): Move entity into Persistence Context
+flush(): Synchronize Persistence Context -> Database
+commit(): Commit Database Transaction
+
+
+new Employee()
+     │
+     ▼
+Transient
+     │
+persist()
+     ▼
+Persistent
+     │
+session.close()
+     ▼
+Detached
+
+Session: Hibernate API/unit of work , it manage Persistence Context and
+interact with DB through JDBC connection
+
+Persistence Context: where Hibernate manage entity ( managed entity), it provides:
+    + first-level cache
+    + identity map
+    + dirty checking
+    + entity lifecycle management
+
+Transaction: define boundary for atomic database operation
+
+Database: where persistent data
