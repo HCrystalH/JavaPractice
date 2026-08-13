@@ -1,6 +1,5 @@
 package org.example;
 
-import org.example.config.DbInitializer;
 import org.example.config.HibernateUtil;
 import org.example.dto.request.EmployeeRequest;
 import org.example.repository.EmployeeRepository;

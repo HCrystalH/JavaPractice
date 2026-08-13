@@ -24,9 +24,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public void add(EmployeeRequest employeeRequest) {
         if(employeeRequest == null){
-            // for simple just print out
-            System.out.println("Employee is null");
-            return;
+            throw new IllegalArgumentException("Employee request is null");
         }
 
         employeeRepository.save(convertToEntity(employeeRequest));
@@ -51,10 +49,18 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void update(int id, EmployeeRequest employee) {
-        if(findById(id) == null){
+        Employee employeeEntity = employeeRepository.findById(id).orElse(null);
+        if(employeeEntity == null){
             throw new ResourceNotFound("Employee not found");
         }
-        employeeRepository.update(convertToEntity(employee));
+
+        // Convert data from Request to entity
+        employeeEntity.setAge(employee.age());
+        employeeEntity.setName(employee.name());
+        employeeEntity.setDepartment(employee.department());
+        employeeEntity.setSalary(employee.salary());
+
+        employeeRepository.update(employeeEntity);
     }
 
     @Override
@@ -73,7 +79,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = new Employee();
 
         employee.setName(employeeRequest.name());
-        employee.setSalary(employeeRequest.salary());
+        employee.setAge(employeeRequest.age());
         employee.setDepartment(employeeRequest.department());
         employee.setSalary(employeeRequest.salary());
 
